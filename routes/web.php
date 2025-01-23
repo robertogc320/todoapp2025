@@ -14,4 +14,7 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+    Route::get('/edt-tareas', function () {
+        return view('edt-tareas');
+    })->name('edt-tareas');
 });

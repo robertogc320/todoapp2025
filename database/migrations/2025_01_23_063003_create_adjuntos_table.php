@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('adjuntos', function (Blueprint $table) {
             $table->id();
+            $table->string('archivo'); // filename de la imagen o pdf
+            $table->string('nombre'); // filename de la imagen o pdf
+            $table->foreignId('tarea_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

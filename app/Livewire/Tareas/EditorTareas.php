@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Tareas;
 
+use App\Models\Adjunto;
 use App\Models\Tarea;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Validate;
@@ -19,8 +20,11 @@ class EditorTareas extends Component
     // propiedades
     public $editando;
     public $id; // id
+    public $contador; // auxiliar para contador de adjuntos
+    
     public $tarea; //la tarea en edicion 
     public $cambiarFotos = false;
+    public $encabezadoEditor;
     public $titulo;
     public $descripcion;
     public $activo;
@@ -39,11 +43,11 @@ class EditorTareas extends Component
     //     'eliminarClienteEvent' => 'eliminarClienteEventListener'
     // ];
     
-    // reglas de validacion
-    protected $rules = [
-        'titulo' => 'required|max:150',
-        'descripcion' => 'required|max:250',
-    ];
+    // // reglas de validacion
+    // protected $rules = [
+    //     'titulo' => 'required|max:150',
+    //     'descripcion' => 'required|max:250',
+    // ];
 
     public function mount($id = 0)
     {
@@ -51,13 +55,16 @@ class EditorTareas extends Component
         if (!isset($id) or $id == "0") {
             $this->fill([
                 'titulo' => "",
+                'encabezadoEditor' => "Nueva Tarea",
                 'descripcion' => "",
+                'adjuntoNombre' => "",
             ]);
         } else { // editando, cargamos la info de la tarea
             $this->editando = true;
+            $this->encabezadoEditor = "Editar Tarea";
             $this->tarea = Tarea::findOrFail($id);
             $this->titulo = $this->tarea->titulo;
-            $this->descripcion = $this->product->descripcion;
+            $this->descripcion = $this->tarea->descripcion;
         }
     }
 
@@ -69,21 +76,22 @@ class EditorTareas extends Component
     protected function limpiar() {
         $this->reset([
             'titulo',
-            'description',
+            'descripcion',
+            'adjuntoNombre',
         ]);
         $this->tarea = null;
         $this->files = null;
         $this->iteration++;
     }
 
-    public function guardar() {
+    public function guardarTarea() {
         $mensajeError = "";
 
-        if (blank($this->titulo) or blank($this->description)) {
+        if (blank($this->titulo) or blank($this->descripcion)) {
             if (blank($this->titulo)) {
                 $mensajeError = "{$mensajeError}" . (($mensajeError) ? "; " : "") . "Agregue un titulo";
             }
-            if (blank($this->description)) {
+            if (blank($this->descripcion)) {
                 $mensajeError = "{$mensajeError}" . (($mensajeError) ? "; " : "") . "Agregue una descripción";
             }
             $mensajeError = "{$mensajeError}.";
@@ -93,23 +101,27 @@ class EditorTareas extends Component
             return;
         }
 
-        // archivos agregados
-        $pathsFiles = [];
-        foreach ($this->files as $photo) {
-            $ruta = Storage::putFile('/tareas/images', $photo);
-            $pathsFiles[] = str_replace("tareas/images/", "", $ruta);
-        }
-
         $tarea = Tarea::create([
-            'titulo' => $this->name,
+            'titulo' => $this->titulo,
             'descripcion' => $this->descripcion,
-            'completada' => $this->price,
+            'completada' => true,
 
             // 'image_url' => $pathsFiles[0],
             // 'image1_url' => $pathsFiles[1],
             // 'image2_url' => $pathsFiles[2],
             // 'image3_url' => $pathsFiles[3],
         ]);
+
+        // adjuntos agregados
+        foreach ($this->files as $photo) {
+            $ruta = Storage::putFile('/tareas/images', $photo);
+            $filename = str_replace("tareas/images/", "", $ruta);
+            
+            $adjunto = Adjunto::create([
+                'tarea_id' => $tarea->id,
+                'image' => $photo->getClientOriginalName(),//$filename,
+            ]);
+        }
 
         //$tarea->categories()->sync(array_keys($this->categoriesSelected));
 
@@ -125,5 +137,32 @@ class EditorTareas extends Component
         //redirigimos al resumen de actividades
         //redirect(route('tareas'));
         $this->dispatch('successLivewireAlertEvent', 'Tarea Guardada!');
+    }
+
+    public function actualizarTarea()
+    {
+    }
+
+    public function quitarAdjunto($index) {
+        $this->files[$index] = null;
+    }
+
+    public function agregarAdjunto()
+    {   
+            $this->contador++;
+
+            $data = (object) [
+                'index' => $this->contador,
+                'description' => $this->medida_description,
+            ];
+
+            $this->medidas[] = $data;
+    }
+
+    public function agregarAdjuntos()
+    {
+        // Reset Upload Form
+        $this->files = null;
+        $this->iteration++;
     }
 }
