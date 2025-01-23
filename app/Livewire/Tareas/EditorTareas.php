@@ -14,27 +14,22 @@ class EditorTareas extends Component
 {
     use WithFileUploads;
 
-    public $open = false;
-    public $modo = 1; // 1 nuevo, 2 editando, 3 mostrando, 4 eliminando
-
     // propiedades
     public $editando;
-    public $id; // id
-    public $contador; // auxiliar para contador de adjuntos
-    
-    public $tarea; //la tarea en edicion 
-    public $cambiarFotos = false;
+    public $tarea; //la tarea en edicion
+    public $completada = false;
     public $encabezadoEditor;
+
+    #[Validate('required', message: 'Ingrese un nombre')]
     public $titulo;
+    #[Validate('required', message: 'Ingrese la descripción')]
     public $descripcion;
-    public $activo;
 
     #[Validate('image|max:1024')] // Tamaño maximo de archivos 1MB Max
     public $files = [];
-    public $iteration = 0;
-
-    // edit
-    public $original;
+    public $conservedfiles = [];
+    public $removedfiles = [];
+    public $iteration = 0; // para el upload
 
     // eventos con admin panel
     // protected $listeners = [
@@ -43,16 +38,20 @@ class EditorTareas extends Component
     //     'eliminarClienteEvent' => 'eliminarClienteEventListener'
     // ];
     
-    // // reglas de validacion
-    // protected $rules = [
-    //     'titulo' => 'required|max:150',
-    //     'descripcion' => 'required|max:250',
-    // ];
+    // reglas de validacion
+    protected $rules = [
+        'titulo' => 'required|max:150',
+        'descripcion' => 'required|max:250',
+        'files' => [
+            'required',
+            'file',
+            'max:340',],
+    ];
 
-    public function mount($id = 0)
+    public function mount($id)
     {
         // nueva tarea
-        if (!isset($id) or $id == "0") {
+        if (!isset($id) or $id =="") {
             $this->fill([
                 'titulo' => "",
                 'encabezadoEditor' => "Nueva Tarea",
@@ -62,9 +61,13 @@ class EditorTareas extends Component
         } else { // editando, cargamos la info de la tarea
             $this->editando = true;
             $this->encabezadoEditor = "Editar Tarea";
-            $this->tarea = Tarea::findOrFail($id);
+            $this->tarea = Tarea::with('adjuntos')->findOrFail($id);
             $this->titulo = $this->tarea->titulo;
             $this->descripcion = $this->tarea->descripcion;
+
+            foreach ($this->tarea->adjuntos as $adjunto) {
+                $this->conservedfiles[] = $adjunto;
+            }
         }
     }
 
@@ -77,9 +80,43 @@ class EditorTareas extends Component
         $this->reset([
             'titulo',
             'descripcion',
-            'adjuntoNombre',
         ]);
         $this->tarea = null;
+        $this->files = null;
+        $this->iteration++;
+    }
+
+    public function quitarAdjuntoActual($nombre) {
+        $index = 0;
+        foreach ($this->conservedfiles as $adjunto) {
+            if ($adjunto && $adjunto->nombre===$nombre) {
+                $this->removedfiles[] = $this->conservedfiles[$index];
+                $this->conservedfiles[$index] = null;
+                break;
+            }
+            $index++;
+        }
+    }
+
+    public function quitarAdjuntoNuevo($index) {
+        $this->files[$index] = null;
+    }
+
+    public function regresarAdjuntoActual($nombre) {
+        $index = 0;
+        foreach ($this->removedfiles as $adjunto) {
+            if ($adjunto && $adjunto->nombre===$nombre) {
+                $this->conservedfiles[] = $this->removedfiles[$index];
+                $this->removedfiles[$index] = null;
+                break;
+            }
+            $index++;
+        }
+    }
+
+    public function agregarAdjuntos()
+    {
+        // Reset Upload Form
         $this->files = null;
         $this->iteration++;
     }
@@ -104,65 +141,109 @@ class EditorTareas extends Component
         $tarea = Tarea::create([
             'titulo' => $this->titulo,
             'descripcion' => $this->descripcion,
-            'completada' => true,
-
-            // 'image_url' => $pathsFiles[0],
-            // 'image1_url' => $pathsFiles[1],
-            // 'image2_url' => $pathsFiles[2],
-            // 'image3_url' => $pathsFiles[3],
+            'completada' => $this->completada,
         ]);
 
         // adjuntos agregados
         foreach ($this->files as $photo) {
-            $ruta = Storage::putFile('/tareas/images', $photo);
-            $filename = str_replace("tareas/images/", "", $ruta);
+            // movemos el archivo a la ruta
+            $ruta = Storage::putFile('/tareas/archivos', $photo);
+            $filename = str_replace("tareas/archivos/", "", $ruta);
             
             $adjunto = Adjunto::create([
                 'tarea_id' => $tarea->id,
-                'image' => $photo->getClientOriginalName(),//$filename,
+                'nombre' => $photo->getClientOriginalName(),//$filename,
+                'archivo' => $filename,
             ]);
         }
-
-        //$tarea->categories()->sync(array_keys($this->categoriesSelected));
-
-        /*$data = (object) [  
-            'name' => $this->name,
-        ];
-        dd($data);*/
 
         // Reseteamos el Upload Form
         $this->files = null;
         $this->iteration++;
 
         //redirigimos al resumen de actividades
-        //redirect(route('tareas'));
+        $this->limpiar();
+        redirect(route('dashboard'));
+
         $this->dispatch('successLivewireAlertEvent', 'Tarea Guardada!');
+    }
+
+    public function borrarTarea()
+    {
+        $mensajeError = "";
+
+        //borramos la imagenes anteriores
+        $tarea = Tarea::find($this->tarea->id);
+        //dd($tarea->adjuntos());
+        foreach ($tarea->adjuntos as $adjunto) {
+            Storage::delete('/tareas/archivos/' . $adjunto->archivo);    
+        }
+
+        // eliminamos
+        Tarea::where('id', $this->tarea->id)->delete();
+
+        // Reset Upload Form
+        $this->files = null;
+        $this->iteration++;
+
+        $this->limpiar();
+        redirect(route('dashboard'));
+        //$this->dispatch('successLivewireAlertEvent', '¡Producto Borrado!');
     }
 
     public function actualizarTarea()
     {
-    }
+        $mensajeError = "";
 
-    public function quitarAdjunto($index) {
-        $this->files[$index] = null;
-    }
+        if (blank($this->titulo) or blank($this->descripcion)) {
+            if (blank($this->titulo)) {
+                $mensajeError = "{$mensajeError}" . (($mensajeError) ? "; " : "") . "Agregue un titulo";
+            }
+            if (blank($this->descripcion)) {
+                $mensajeError = "{$mensajeError}" . (($mensajeError) ? "; " : "") . "Agregue una descripción";
+            }
+            $mensajeError = "{$mensajeError}.";
 
-    public function agregarAdjunto()
-    {   
-            $this->contador++;
+            $this->dispatch('errorLivewireAlertEvent', $mensajeError);
+            $this->validate();
+            return;
+        }
 
-            $data = (object) [
-                'index' => $this->contador,
-                'description' => $this->medida_description,
-            ];
+        // actualizamos titulo y descripcion
+        $tarea = Tarea::find($this->tarea->id);
+        $tarea->titulo = $this->titulo;
+        $tarea->descripcion = $this->descripcion;
+        $tarea->completada = $this->completada;
+        $tarea->save();
 
-            $this->medidas[] = $data;
-    }
+        // adjuntos nuevos, agregamos el archivo
+        foreach ($this->files as $photo) {
+            // movemos el archivo a la ruta
+            $ruta = Storage::putFile('/tareas/archivos', $photo);
+            $filename = str_replace("tareas/archivos/", "", $ruta);
+            
+            $adjunto = Adjunto::create([
+                'tarea_id' => $tarea->id,
+                'nombre' => $photo->getClientOriginalName(),//$filename,
+                'archivo' => $filename,
+            ]);
+        }
 
-    public function agregarAdjuntos()
-    {
-        // Reset Upload Form
+        // adjuntos eliminados, eliminamos los archivos
+        foreach ($this->removedfiles as $adjunto) {
+            Storage::delete('/tareas/archivos/' . $adjunto->archivo);
+            Adjunto::where('id', $adjunto->id)->delete();
+        }
+
+        // Reseteamos el Upload Form
         $this->files = null;
         $this->iteration++;
+
+        //redirigimos al resumen de actividades
+        $this->limpiar();
+        redirect(route('dashboard'));
+
+        $this->dispatch('successLivewireAlertEvent', 'Tarea Guardada!');
     }
+
 }

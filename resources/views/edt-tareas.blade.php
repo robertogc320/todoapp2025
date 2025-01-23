@@ -6,7 +6,7 @@
                 @if(!empty($id))
                     <livewire:tareas.editor-tareas id="{{$id}}"/>
                 @else
-                    <livewire:tareas.editor-tareas id="0"/>
+                    <livewire:tareas.editor-tareas id=""/>
                 @endif
             </div>
         </div>
