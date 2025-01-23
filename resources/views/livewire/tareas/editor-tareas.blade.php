@@ -156,7 +156,7 @@
                                                         {{--  ES PDF --}}
                                                         @else
                                                             <img src="{{ asset('icons8-pdf-64.png') }}"
-                                                                alt="Archiivo pdf" class="w-20 h-20 rounded-lg p-1">
+                                                                alt="Archivo pdf" class="w-20 h-20 rounded-lg p-1">
                                                         @endif
                                                     </div>
                                                     <div class="flex-1">
@@ -189,7 +189,7 @@
                                                     {{--  ES PDF --}}
                                                     @else
                                                         <img src="{{ asset('icons8-pdf-64.png') }}"
-                                                            alt="Archiivo pdf" class="w-20 h-20 rounded-lg p-1">
+                                                            alt="Archivo pdf" class="w-20 h-20 rounded-lg p-1">
                                                     @endif
                                                 </div>
                                                 <div class="flex-1">
@@ -226,7 +226,7 @@
                                                     {{--  ES PDF --}}
                                                     @else
                                                         <img src="{{ asset('icons8-pdf-64.png') }}"
-                                                            alt="Archiivo pdf" class="w-20 h-20 rounded-lg p-1">
+                                                            alt="Archivo pdf" class="w-20 h-20 rounded-lg p-1">
                                                     @endif
                                                 </div>
                                                 <div class="flex-1">
