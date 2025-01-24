@@ -37,7 +37,7 @@ Antes de ejecutar el proyecto, asegúrate de contar con lo siguiente:
 
 1. Clonar el repositorio:
    ```bash
-   gh repo clone robertogc320/todoapp2025
+   git clone https://github.com/robertogc320/todoapp2025.git
    cd todoapp2025
 
 2. Instalar dependencias de PHP y JavaScript:
