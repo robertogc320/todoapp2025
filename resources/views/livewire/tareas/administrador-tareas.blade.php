@@ -1,6 +1,11 @@
 <div class="pt-2">
     {{-- FILTRO DE BUSQUEDA --}}
     <div class="flex flex-col md:flex-row mt-2 mb-4 gap-4 pl-2">
+        {{-- NOMRE DE LA TAREA, al dar enter se activa el filtro --}}
+        <div>
+            <x-label for="search" class="block text-sm font-medium text-gray-700">Tarea</x-label>
+            <x-input wire:model="search" type="text" name="search" wire:keydown.enter="buscar"/>
+        </div>
         <div class="block mt-6 mr-4 ">
             <label for="completada" class="inline-flex relative items-center cursor-pointer">
                 <input type="checkbox" value="" id="completada" class="sr-only peer"
@@ -20,10 +25,12 @@
                 <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">¿Mostrar solo la completadas?</span>
             </label>
         </div>
+        {{-- FECHA INICIAL --}}
         <div>
             <x-label for="fechaIni" class="block text-sm font-medium text-gray-700">Fecha Inicial</x-label>
             <x-input wire:model="fechaIni" type="date" name="fechaIni" wire:keydown.enter="buscar" class="bg-white"/>
         </div>
+        {{-- FECHA FINAL --}}
         <div>
             <x-label for="fechaFin" class="block text-sm font-medium text-gray-700">Fecha Final</x-label>
             <x-input wire:model="fechaFin" type="date" name="fechaFin" wire:keydown.enter="buscar" class="bg-white"/>
@@ -40,12 +47,10 @@
             <div>
                 @if($tarea->completada)
                     <img class="h-48  w-full object-cover rounded-t-lg" 
-                    {{-- src="{{ route('images', ['filename' => $product->image_url])}}" --}}
                     src="{{ asset('tareaok.png') }}"
                     />
                 @else
                 <img class="h-48  w-full object-cover rounded-t-lg" 
-                    {{-- src="{{ route('images', ['filename' => $product->image_url])}}" --}}
                     src="{{ asset('tarea-not.png') }}"
                     />
                 @endif
@@ -71,4 +76,3 @@
         @endforeach
     </div>
 </div>
-

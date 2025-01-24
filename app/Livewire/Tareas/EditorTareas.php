@@ -120,7 +120,6 @@ class EditorTareas extends Component
             }
             $mensajeError = "{$mensajeError}.";
 
-            $this->dispatch('errorLivewireAlertEvent', $mensajeError);
             $this->validate();
             return;
         }
@@ -153,8 +152,6 @@ class EditorTareas extends Component
         //redirigimos al resumen de actividades
         $this->limpiar();
         redirect(route('dashboard'));
-
-        $this->dispatch('successLivewireAlertEvent', 'Tarea Guardada!');
     }
 
     public function borrarTarea()
@@ -163,7 +160,6 @@ class EditorTareas extends Component
 
         //borramos la imagenes anteriores
         $tarea = Tarea::find($this->tarea->id);
-        //dd($tarea->adjuntos());
         foreach ($tarea->adjuntos as $adjunto) {
             Storage::delete('/tareas/archivos/' . $adjunto->archivo);    
         }
@@ -177,7 +173,6 @@ class EditorTareas extends Component
 
         $this->limpiar();
         redirect(route('dashboard'));
-        //$this->dispatch('successLivewireAlertEvent', '¡Producto Borrado!');
     }
 
     public function actualizarTarea()
@@ -232,8 +227,6 @@ class EditorTareas extends Component
         //redirigimos al resumen de actividades
         $this->limpiar();
         redirect(route('dashboard'));
-
-        $this->dispatch('successLivewireAlertEvent', 'Tarea Guardada!');
     }
 
 }
