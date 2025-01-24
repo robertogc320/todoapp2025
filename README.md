@@ -57,11 +57,7 @@ Antes de ejecutar el proyecto, asegúrate de contar con lo siguiente:
     DB_USERNAME=admin
     DB_PASSWORD=tsj2024
 
-4. Generar la clave de la aplicación:
-   ``` bash
-   php artisan key:generate
-
-5. Ejecutar las migraciones y seeders:
+4. Ejecutar las migraciones y seeders:
    ``` bash
    php artisan migrate --seed
 
