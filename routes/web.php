@@ -28,7 +28,8 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
-    //Para ir a editor de tareas, para una nueva o editar alguna
+    
+    //Para ir a editor de tareas, para una nueva o editar alguna, el parameto "id"
     Route::get('/edt-tareas/{id?}', function ($id=null) {
         return view('edt-tareas', ['id' => $id]);
     })->name('edt-tareas');

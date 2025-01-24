@@ -47,11 +47,11 @@
             <div>
                 @if($tarea->completada)
                     <img class="h-48  w-full object-cover rounded-t-lg" 
-                    src="{{ asset('tareaok.png') }}"
+                    src="{{ asset('tareaYES.png') }}"
                     />
                 @else
                 <img class="h-48  w-full object-cover rounded-t-lg" 
-                    src="{{ asset('tarea-not.png') }}"
+                    src="{{ asset('tareaNOT.png') }}"
                     />
                 @endif
             </div>
