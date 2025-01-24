@@ -43,7 +43,8 @@ Antes de ejecutar el proyecto, asegúrate de contar con lo siguiente:
 2. Instalar dependencias de PHP y JavaScript:
    ```bash
    composer install
-   npm install && npm run build
+   npm install
+   npm run build
 
 3. Configurar el archivo .env, copia el archivo .env.example y renómbralo a .env:
    ```bash
