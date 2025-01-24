@@ -3,13 +3,10 @@
     {{-- PROPIEDADES DE LA TAREA --}}
     <div class="col-span-1 flex items-start 
     bg-white dark:bg-black
-        rounded-lg p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] 
-        ring-1 ring-white/[0.05] transition duration-300 
+        rounded-lg p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)]  
         hover:text-black/70 
-        hover:ring-black/20 focus:outline-none focus-visible:ring-[#FF2D20] lg:pb-10 
-        dark:ring-zinc-800 
-        dark:hover:text-white/70 
-        dark:hover:ring-zinc-700">
+         lg:pb-10 
+        dark:hover:text-white/70">
         <div class="w-full">
             <div class="flex flex-row mb-2">
                 <h5 class="text-xl font-medium text-gray-900 dark:text-gray-100">{{$encabezadoEditor}}</h5>
@@ -36,7 +33,6 @@
             </div>
             @endif
             <div>
-                @csrf
                 <div>
                     <x-label for="titulo" class="block text-sm font-medium text-gray-700">Nombre:</x-label>
                     <x-input type="text" name="name" id="name"
@@ -50,13 +46,17 @@
                 <div>
                     <x-label for="descripcion" class="block text-sm font-medium text-gray-700">Descripción:</x-label>
                     <textarea name="descripcion" id="descripcion"
-                        wire:model="descripcion" 
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600">
-                            {{ old('descripcion') }}
+                        wire:model="descripcion"
+                        value="{{ old('descripcion') }}" 
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600">                    
                     </textarea>
                     @error('descripcion')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
+                </div>
+                <div>
+                    <x-label value="Fecha"/>
+                    <x-input type="date" wire:model="fecha" class="w-full"/>
                 </div>
             </div>
             
@@ -79,13 +79,13 @@
     <div class="col-span-2 w-full h-full 
      bg-white dark:bg-black
         rounded-lg p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] 
-        ring-1 ring-white/[0.05] transition duration-300 
-        hover:ring-black/20 focus:outline-none focus-visible:ring-[#FF2D20] lg:pb-10 
-        dark:ring-zinc-800 
-        dark:hover:ring-zinc-700">
+        
+         lg:pb-10 
+        dark:ring-zinc-800 ">
 
         {{-- EL UPLOAD OCULTO PARA MEJOR DISEÑO --}}
         <form wire:submit="agregarAdjuntos" id="uploadForm">
+            @csrf
             <div
                 x-data="{ uploading: false, progress: 0 }"
                 x-on:livewire-upload-start="uploading = true"
@@ -95,7 +95,8 @@
                 >
                 @error('files.*') <span class="error">{{ $message }}</span> @enderror
     
-                <input id="imputProductsImages" type="file" wire:model="files" name="files" id="upload{{ $iteration }}" multiple class="hidden">
+                <input id="imputTareasFiles" type="file" wire:model="files" name="files" id="upload{{ $iteration }}" multiple class="hidden"
+                        accept=".jpg,.pdf,.jpeg">
     
                 <!-- Progress Bar -->
                 <div x-show="uploading">
@@ -110,164 +111,115 @@
             <div class="grid grid-cols-1">
                 <div class="flex flex-row gap-2 ">
                     <div>
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Adjuntos</h3>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Adjuntar Imagenes y/o Pdf´s</h3>
                     </div>
                     <div onclick="subirArchivos(this)" class="w-8 mr-2 cursor-pointer"><img src="{{ asset('icons8-adjuntar-64.png') }}"</img></div>
                 </div>
 
                 <div class=" grid-cols-1 w-full mt-2">
-                    @if (!blank($files) && !$editando)
-                        <table class="w-full text-sm text-left text-gray-500 ">
-                            <tbody>
-                                @foreach ($files as $adjunto)
-                                    @if(!blank($adjunto))
+                    <table class="w-full text-sm text-left text-gray-500 ">
+                        <tbody>
+                            {{--  NUEVOS ARCHIVOS ADJUNTOS --}}
+                            @if (!blank($files))
+                                @foreach ($files as $adjuntoFile)
+                                    @if(!blank($adjuntoFile))
                                     <tr class="bg-white dark:bg-black">
-                                        <th scope="row"
+                                        <td scope="row"
                                             class="py-1 px-6 text-sm font-normal whitespace-nowrap dark:text-white">
-                                            {{ $adjunto->getClientOriginalName() }}
-                                        </th>
+                                            <div class="flex items-center space-x-4 mt-2">
+                                                <div class="relative">
+                                                    {{--  ES IMAGEN --}}
+                                                    @if(str_ends_with($adjuntoFile->getClientOriginalName(), '.jpg'))
+                                                    <img src="{{ $adjuntoFile->temporaryUrl() }}"
+                                                        alt="{{$adjuntoFile->getClientOriginalName()}}" class="w-20 h-20 rounded-lg p-1">
+                                                    {{--  ES PDF --}}
+                                                    @else
+                                                        <img src="{{ asset('icons8-pdf-64.png') }}"
+                                                            alt="Archivo pdf" class="w-20 h-20 rounded-lg p-1">
+                                                    @endif
+                                                </div>
+                                                <div class="flex-1">
+                                                    <h3 class="text-sm dark:text-white/70 font-medium">{{ $adjuntoFile->getClientOriginalName() }}</h3>
+                                                </div>
+                                            </div>
+                                        </td>
                                         <td class="py-1 text-right">
-                                            <div wire:click="quitarAdjunto({{ $loop->index }})" class="w-8">
+                                            <div wire:click="quitarAdjuntoNuevo('{{ $loop->index }}')" class="w-8">
                                                 <img src="{{ asset('icons8-cancel-64.png') }}"/>
                                             </div>
                                         </td>
                                     </tr>
                                     @endif
                                 @endforeach
-                            </tbody>
-                        </table>
-                    @else
-                        @if($editando)
-                        <table class="w-full text-sm text-left text-gray-500 ">
-                            <tbody>
-                                {{--  NUEVOS ARCHIVOS ADJUNTOS --}}
-                                @if (!blank($files))
-                                    @foreach ($files as $adjuntoFile)
-                                        @if(!blank($adjuntoFile))
-                                        <tr class="bg-white dark:bg-black">
-                                            <td scope="row"
-                                                class="py-1 px-6 text-sm font-normal whitespace-nowrap dark:text-white">
-                                                <div class="flex items-center space-x-4 mt-2">
-                                                    <div class="relative">
-                                                        {{--  ES IMAGEN --}}
-                                                        @if(str_ends_with($adjuntoFile->getClientOriginalName(), '.jpg'))
-                                                        <img src="{{ $adjuntoFile->temporaryUrl() }}"
-                                                            alt="{{$adjuntoFile->getClientOriginalName()}}" class="w-20 h-20 rounded-lg p-1">
-                                                        {{--  ES PDF --}}
-                                                        @else
-                                                            <img src="{{ asset('icons8-pdf-64.png') }}"
-                                                                alt="Archivo pdf" class="w-20 h-20 rounded-lg p-1">
-                                                        @endif
-                                                    </div>
-                                                    <div class="flex-1">
-                                                        <h3 class="text-sm dark:text-white/70 font-medium">{{ $adjuntoFile->getClientOriginalName() }}</h3>
-                                                    </div>
-                                                </div>
-                                        </td>
-                                            <td class="py-1 text-right">
-                                                <div wire:click="quitarAdjuntoNuevo('{{ $loop->index }}')" class="w-8">
-                                                    <img src="{{ asset('icons8-cancel-64.png') }}"/>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        @endif
-                                    @endforeach
-                                @endif
+                            @endif
 
-                                {{--  ARCHIVOS ADJUNTOS ACTUALES --}}
-                                @foreach ($conservedfiles as $adjuntoOld)
-                                    @if($adjuntoOld && !blank($adjuntoOld))
-                                    <tr class="bg-white dark:bg-black">
-                                        <td scope="row"
-                                            class="py-1 px-6 text-sm font-normal whitespace-nowrap dark:text-white">
-                                            <div class="flex items-center space-x-4 mt-2">
-                                                <div class="relative">
-                                                    {{--  ES IMAGEN --}}
-                                                    @if(str_ends_with($adjuntoOld->archivo, '.jpg'))
-                                                    <img src="{{ route('images', ['filename' => $adjuntoOld->archivo]) }}"
-                                                        alt="{{$adjuntoOld->nombre}}" class="w-20 h-20 rounded-lg p-1">
-                                                    {{--  ES PDF --}}
-                                                    @else
-                                                        <img src="{{ asset('icons8-pdf-64.png') }}"
-                                                            alt="Archivo pdf" class="w-20 h-20 rounded-lg p-1">
-                                                    @endif
-                                                </div>
-                                                <div class="flex-1">
-                                                    <h3 class="text-sm dark:text-white/70 font-medium">{{ $adjuntoOld->nombre }}</h3>
-                                                </div>
+                            {{--  ARCHIVOS ADJUNTOS ACTUALES --}}
+                            @foreach ($conservedfiles as $adjuntoOld)
+                                @if($adjuntoOld && !blank($adjuntoOld))
+                                <tr class="bg-white dark:bg-black">
+                                    <td scope="row"
+                                        class="py-1 px-6 text-sm font-normal whitespace-nowrap dark:text-white">
+                                        <div class="flex items-center space-x-4 mt-2">
+                                            <div class="relative">
+                                                {{--  ES IMAGEN --}}
+                                                @if(str_ends_with($adjuntoOld->archivo, '.jpg'))
+                                                <img src="{{ route('images', ['filename' => $adjuntoOld->archivo]) }}"
+                                                    alt="{{$adjuntoOld->nombre}}" class="w-20 h-20 rounded-lg p-1">
+                                                {{--  ES PDF --}}
+                                                @else
+                                                    <img src="{{ asset('icons8-pdf-64.png') }}"
+                                                        alt="Archivo pdf" class="w-20 h-20 rounded-lg p-1">
+                                                @endif
                                             </div>
-                                        </td>
-                                        <td class="py-1 text-right">
-                                            <div wire:click="quitarAdjuntoActual('{{ $adjuntoOld->nombre}}')" class="w-8">
-                                                <img src="{{ asset('icons8-cancel-64.png') }}"/>
+                                            <div class="flex-1">
+                                                <h3 class="text-sm dark:text-white/70 font-medium">{{ $adjuntoOld->nombre }}</h3>
                                             </div>
-                                        </td>
-                                    </tr>
-                                    @endif
-                                @endforeach
-                            </tbody>
-                        </table>
-                        @endif
-                        {{--  ARCHIVOS ADJUNTOS ELIMINADOS --}}
-                        <table class="w-full text-sm text-left text-gray-500 ">
-                            <tbody>
-                                @foreach ($removedfiles as $adjuntoRemoved)
-                                    @if(!blank($adjuntoRemoved))
-                                    <tr class="bg-white dark:bg-black">
-                                        <td scope="row"
-                                            wire:click="regresarAdjuntoActual('{{ $adjuntoRemoved->nombre}}')"
-                                            class="py-1 px-6 text-sm font-normal whitespace-nowrap dark:text-white">
-                                            <div class="flex items-center space-x-4 mt-2">
-                                                <div class="relative">
-                                                    {{--  ES IMAGEN --}}
-                                                    @if(str_ends_with($adjuntoRemoved->archivo, '.jpg'))
-                                                    <img src="{{ route('images', ['filename' => $adjuntoRemoved->archivo]) }}"
-                                                        alt="{{$adjuntoRemoved->nombre}}" class="w-20 h-20 rounded-lg p-1">
-                                                    {{--  ES PDF --}}
-                                                    @else
-                                                        <img src="{{ asset('icons8-pdf-64.png') }}"
-                                                            alt="Archivo pdf" class="w-20 h-20 rounded-lg p-1">
-                                                    @endif
-                                                </div>
-                                                <div class="flex-1">
-                                                    <h3 class="py-1 px-6 text-sm font-normal text-red-600 line-through whitespace-nowrap dark:text-white cursor-pointer">{{ $adjuntoRemoved->nombre }}</h3>
-                                                </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-1 text-right">
+                                        <div wire:click="quitarAdjuntoActual('{{ $adjuntoOld->nombre}}')" class="w-8">
+                                            <img src="{{ asset('icons8-cancel-64.png') }}"/>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endif
+                            @endforeach
+                            @foreach ($removedfiles as $adjuntoRemoved)
+                                @if(!blank($adjuntoRemoved))
+                                <tr class="bg-white dark:bg-black">
+                                    <td scope="row"
+                                        wire:click="regresarAdjuntoActual('{{ $adjuntoRemoved->nombre}}')"
+                                        class="py-1 px-6 text-sm font-normal whitespace-nowrap dark:text-white">
+                                        <div class="flex items-center space-x-4 mt-2">
+                                            <div class="relative">
+                                                {{--  ES IMAGEN --}}
+                                                @if(str_ends_with($adjuntoRemoved->archivo, '.jpg'))
+                                                <img src="{{ route('images', ['filename' => $adjuntoRemoved->archivo]) }}"
+                                                    alt="{{$adjuntoRemoved->nombre}}" class="w-20 h-20 rounded-lg p-1">
+                                                {{--  ES PDF --}}
+                                                @else
+                                                    <img src="{{ asset('icons8-pdf-64.png') }}"
+                                                        alt="Archivo pdf" class="w-20 h-20 rounded-lg p-1">
+                                                @endif
                                             </div>
-                                        </td>
-                                    </tr>
-                                    @endif
-                                @endforeach
-                            </tbody>
-                        </table>
-                    @endif
+                                            <div class="flex-1">
+                                                <h3 class="py-1 px-6 text-sm font-normal text-red-600 line-through whitespace-nowrap dark:text-white cursor-pointer">{{ $adjuntoRemoved->nombre }}</h3>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endif
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-
 <script>
     function subirArchivos(element) {
-        //if (element.src.endsWith("noimage.png")) {
-            document.getElementById('imputProductsImages').click();
-        //}
-    }
-
-    function changeImage(element) {
-        if (element.src.endsWith("noimage.png")) {
-            document.getElementById('imputProductsImages').click();
-        } else {
-            document.getElementById('mainImage').src = element.src;
-            // Remove the border from all thumbnails
-            const thumbnails = document.querySelectorAll('.cursor-pointer');
-            thumbnails.forEach(thumb => {
-                thumb.classList.remove('border-blue-500');
-                thumb.classList.add('border-transparent');
-            });
-            // Add the border to the clicked thumbnail
-            element.classList.remove('border-transparent');
-            element.classList.add('border-blue-500');
-        }
+        document.getElementById('imputTareasFiles').click();
     }
 </script>

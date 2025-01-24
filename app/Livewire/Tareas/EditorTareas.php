@@ -4,6 +4,7 @@ namespace App\Livewire\Tareas;
 
 use App\Models\Adjunto;
 use App\Models\Tarea;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -20,6 +21,7 @@ class EditorTareas extends Component
     public $completada = false;
     public $encabezadoEditor;
 
+    public $fecha;
     #[Validate('required', message: 'Ingrese un nombre')]
     public $titulo;
     #[Validate('required', message: 'Ingrese la descripción')]
@@ -30,23 +32,6 @@ class EditorTareas extends Component
     public $conservedfiles = [];
     public $removedfiles = [];
     public $iteration = 0; // para el upload
-
-    // eventos con admin panel
-    // protected $listeners = [
-    //     'editarClienteEvent' => 'editarClienteEventListener',
-    //     'nuevoClienteEvent' => 'nuevoClienteEventListener',
-    //     'eliminarClienteEvent' => 'eliminarClienteEventListener'
-    // ];
-    
-    // reglas de validacion
-    protected $rules = [
-        'titulo' => 'required|max:150',
-        'descripcion' => 'required|max:250',
-        'files' => [
-            'required',
-            'file',
-            'max:340',],
-    ];
 
     public function mount($id)
     {
@@ -64,6 +49,8 @@ class EditorTareas extends Component
             $this->tarea = Tarea::with('adjuntos')->findOrFail($id);
             $this->titulo = $this->tarea->titulo;
             $this->descripcion = $this->tarea->descripcion;
+            $this->completada = $this->tarea->completada;
+            $this->fecha = $this->tarea->fecha;
 
             foreach ($this->tarea->adjuntos as $adjunto) {
                 $this->conservedfiles[] = $adjunto;
@@ -142,6 +129,8 @@ class EditorTareas extends Component
             'titulo' => $this->titulo,
             'descripcion' => $this->descripcion,
             'completada' => $this->completada,
+            'fecha' => $this->fecha,
+            'user_id' => Auth::id(),
         ]);
 
         // adjuntos agregados
@@ -214,6 +203,7 @@ class EditorTareas extends Component
         $tarea->titulo = $this->titulo;
         $tarea->descripcion = $this->descripcion;
         $tarea->completada = $this->completada;
+        $tarea->fecha = $this->fecha;
         $tarea->save();
 
         // adjuntos nuevos, agregamos el archivo

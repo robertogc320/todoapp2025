@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('titulo'); // Título de la tarea
             $table->text('descripcion')->nullable(); // Descripción opcional
             $table->boolean('completada')->default(false); // Estado de la tarea
+            $table->date('fecha')->nullable();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -3,9 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// ruta para acceder a las images y archivos que se adjuntan
 Route::get('images/{filename}', function ($filename) {
     $pathfilename = '/tareas/archivos/'.$filename;
     // Verificar si el archivo existe en el disco 'uploads'
@@ -20,15 +18,23 @@ Route::get('images/{filename}', function ($filename) {
     }
 })->name('images');
 
+// solo los usuarios logueados tendran acceso, al dashboard y la creacion de tares
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
+    // dashboard, incluye al commponente Livwewire Administrador de Tareas
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+    //Para ir a editor de tareas, para una nueva o editar alguna
     Route::get('/edt-tareas/{id?}', function ($id=null) {
         return view('edt-tareas', ['id' => $id]);
     })->name('edt-tareas');
+});
+
+// si tratan de ingresar a cualquier otra ruta, redireccionamos al login
+Route::fallback(function () {
+    return redirect()->route('login');
 });
