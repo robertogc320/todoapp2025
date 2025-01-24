@@ -21,7 +21,7 @@ La aplicación incluye dos usuarios preconfigurados para facilitar las pruebas:
    - Contraseña: `test`
 
 2. **Roberto**  
-   - Correo: `admin@example.com`  
+   - Correo: `robertogc320@gmail.com`  
    - Contraseña: `test`
 
 ## Requisitos previos
@@ -32,33 +32,26 @@ Antes de ejecutar el proyecto, asegúrate de contar con lo siguiente:
 - **Composer**
 - **MariaDB** o cualquier otra base de datos compatible
 - **Node.js y npm** (para manejar los assets de frontend)
-- **Docker** (opcional, pero recomendado para entornos más distribuidos)
 
 ## Configuración inicial
 
 1. Clonar el repositorio:
    ```bash
-   git clone <URL_DE_TU_REPOSITORIO>
-   cd <NOMBRE_DEL_PROYECTO>
+   gh repo clone robertogc320/todoapp2025
+   cd todoapp2025
 
+2. Instalar dependencias de PHP y JavaScript:
+   ```bash
+   composer install
+   npm install && npm run build
 
-        --Ejecutar Scripts en SQL:
-            INSERT INTO recurso_role (role_id, recurso_id)
-            SELECT 1, id FROM recursos;
+3. Iniciar el servidor de desarrollo:
+   ```bash
+   php artisan serve
 
-            INSERT INTO role_has_permissions (role_id, permission_id)
-            SELECT 1, id FROM permissions;
+4. ejcurtar los scripts para contruir la bd:
+   ```bash
+   php artisan serve
 
-            INSERT INTO `recurso_role` (`role_id`, `recurso_id`) VALUES ('2', '1');
-            INSERT INTO `recurso_role` (`role_id`, `recurso_id`) VALUES ('2', '2');
-            INSERT INTO `recurso_role` (`role_id`, `recurso_id`) VALUES ('2', '3');
-            INSERT INTO `recurso_role` (`role_id`, `recurso_id`) VALUES ('2', '4');
-
-            INSERT INTO role_has_permissions (role_id, permission_id)
-            SELECT 2, id FROM permissions WHERE id>4;
-        
-        --Datos acceso:
-            isc.sergio.dg@gmail.com : password
-            --Desde este perfil se pueden crear más usuarios con el perfil de administrador o publicador:
-                El perfil de publicador, puede agregar, editar y eliminar: Tipos de Documento y Autoridades Remitentes
-                Puede agregar o editar registros de documentos, pero no puede eliminarlos, para ello debe referirse con el administrador.
+5. Accede a la aplicación en tu navegador:
+   http://localhost:8000
