@@ -45,11 +45,28 @@ Antes de ejecutar el proyecto, asegúrate de contar con lo siguiente:
    composer install
    npm install && npm run build
 
-3. Iniciar el servidor de desarrollo:
+3. Configurar el archivo .env, copia el archivo .env.example y renómbralo a .env:
    ```bash
-   php artisan serve
+   cp .env.example .env
 
-4. ejcurtar los scripts para contruir la bd:
+    Configura tus credenciales de base de datos
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    DB_DATABASE=todoapp2025
+    DB_USERNAME=admin
+    DB_PASSWORD=tsj2024
+
+4. Generar la clave de la aplicación:
+   ``` bash
+   php artisan key:generate
+
+5. Ejecutar las migraciones y seeders:
+   ``` bash
+   php artisan migrate --seed
+
+## Ejecución del proyecto
+
+1. Iniciar el servidor de desarrollo:
    ```bash
    php artisan serve
 
